@@ -6,7 +6,7 @@ import requests
 import base64
 
 # Load API key
-with open('Lorenzo.txt', 'r') as file:
+with open('openaikey', 'r') as file:
     api_key = file.read().strip()  # Read the file and strip whitespace 
 client = OpenAI(api_key=api_key)
 
