@@ -1,11 +1,27 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import HTMLResponse
-from typing import Optional
+import os
 
 app = FastAPI()
 
+# Define a route for the homepage to upload files
+@app.get("/", response_class=HTMLResponse)
+async def read_root():
+    return """
+    <h2>Upload Image</h2>
+    <form action="/upload-image/" enctype="multipart/form-data" method="post">
+        <input name="image" type="file" accept="image/*" required>
+        <button type="submit">Upload Image</button>
+    </form>
 
-# Define a route to handle the uploaded image and optional text input
+    <h2>Upload Text</h2>
+    <form action="/upload-text/" method="post">
+        <input name="text" type="text" placeholder="Enter your text" required>
+        <button type="submit">Upload Text</button>
+    </form>
+    """
+
+# Define a route to handle the uploaded image
 @app.post("/upload-image/")
 async def upload_image(image: UploadFile = File(...)):
     # Process the uploaded image
