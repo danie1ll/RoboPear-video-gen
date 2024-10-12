@@ -12,3 +12,16 @@ python -m pip install -r requirements.txt
 
 ### Launch server
 `uvicorn main:app --reload`
+
+
+
+## Website Gen
+
+```
+python webserver.py
+```
+
+to make the website available to the internet, use ngrok
+```
+ngrok http 8000
+```
