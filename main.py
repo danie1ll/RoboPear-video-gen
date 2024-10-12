@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 import os
 from typing import Optional
 from pydantic import BaseModel
+from createWebsite import TargetAudienceInsights, create_landing_page
 from ml_flows import run_flow, poll_flow
 import logging
 
@@ -35,23 +36,42 @@ async def read_root():
         # <input name="season" type="text" placeholder="Enter season" required>
 
 # Define a route to handle the uploaded image
-@app.post("/upload-image/")
-async def upload_image(image: UploadFile = File(...)):
+@app.post("/upload-image/{sessionid}")
+async def upload_image(sessionid: str, image: UploadFile = File(...)):
     # Process the uploaded image
     contents = await image.read()
+
+    folder_path = os.path.join("generatedWebsites", sessionid)
+    os.makedirs(folder_path, exist_ok=True)
     
-    # Here you can save the image or process it as needed
-    with open(image.filename, "wb") as f:
+    file_path = os.path.join(folder_path, image.filename)
+    with open(file_path, "wb") as f:
         f.write(contents)
     
     print(f"Uploaded image: {image.filename}")
-    return {"message": "Image uploaded successfully", "filename": image.filename}
+    return {"message": "Image uploaded successfully", "filename": file_path}
 
 # Define a route to handle the uploaded text
-@app.post("/upload-text/")
-async def upload_text(text: str = Form(...)):
+@app.post("/upload-text/{sessionid}")
+async def upload_text(sessionid: str, text: str = Form(...)):
     # Process the uploaded text
     print(f"Uploaded text: {text}")
+
+    # call Lorenzos Stuff
+    insights = TargetAudienceInsights(
+        age_groups=["5-9"],
+        gender_distribution=["100% Male", "0% Female"],
+        locations=["New York", "Los Angeles", "Chicago"],
+        interests=["Football", "Soccer", "Sports"],
+        mainimage="coke.jpeg",
+        images=["coke2.jpeg", "coke3.jpeg"],
+        product="Funnzball",
+        description="A football that can make funny sounds when you shoot it",
+    )
+
+    create_landing_page(sessionid, insights)
+
+
     return {"message": "Text uploaded successfully", "text": text}
 
 # # Define a model for the request body

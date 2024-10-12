@@ -9,7 +9,7 @@ DIRECTORY = "./generatedWebsites"
 os.chdir(DIRECTORY)
 
 # Set the port for the server
-PORT = 8000
+PORT = 8001
 
 # Create a handler for serving static files
 handler = http.server.SimpleHTTPRequestHandler

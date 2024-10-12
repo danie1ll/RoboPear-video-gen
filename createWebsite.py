@@ -204,16 +204,17 @@ def create_landing_page(folder: str, insights: TargetAudienceInsights):
 
 # Example usage
 if __name__ == "__main__":
-    # You would typically load these insights from somewhere else
+
+    
     insights = TargetAudienceInsights(
-        age_groups=["18-24", "25-34"],
-        gender_distribution=["80% Male", "20% Female"],
+        age_groups=["5-9"],
+        gender_distribution=["100% Male", "0% Female"],
         locations=["New York", "Los Angeles", "Chicago"],
-        interests=["Technology", "Nerd", "University"],
+        interests=["Football", "Soccer", "Sports"],
         mainimage="coke.jpeg",
         images=["coke2.jpeg", "coke3.jpeg"],
-        product="Mate Caffeine Drink",
-        description="A new caffeine drink that will boost your energy and improve your focus. It contains natural ingredients and has a great taste.",
+        product="Funnzball",
+        description="A football that can make funny sounds when you shoot it",
     )
 
-    create_landing_page('coke', insights)
+    create_landing_page('sessionid', insights)
