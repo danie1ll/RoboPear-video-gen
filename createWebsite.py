@@ -13,6 +13,8 @@ class TargetAudienceInsights(BaseModel):
     mainimage: str
     images: List[str]
     product: str
+    description: str
+
 
 # Read OpenAI API key from file
 with open('openaikey', 'r') as file:
@@ -85,17 +87,78 @@ class ResponseFormat(BaseModel):
 
 def generate_landing_page_content(insights: TargetAudienceInsights) -> ResponseFormat:
     prompt = f"""
-    Create content for a landing page selling {insights.product}. The target audience has the following characteristics:
+    Create content for a landing page selling '{insights.product}'. The target audience has the following characteristics:
     - Age groups: {', '.join(insights.age_groups)}
     - Gender distribution: {', '.join(insights.gender_distribution)}
     - Locations: {', '.join(insights.locations)}
     - Interests: {', '.join(insights.interests)}
+
+    Product Description: {insights.description}
 
     Provide the following elements:
     1. A main color and a background color using html color strings for the landing page. The background color must work with text in main color.
     2. A catchy headline (max 10 words)
     3. A subheadline (max 20 words)
     4. Main content (about 300 words) describing the product benefits and features, use HTML for formatting. Do not use links. Use these images {', '.join(insights.images)} decently in your html, remember to bound the max size of the images in pixels since you do not know the resolution. Be creative with the text formatting.
+    
+    
+
+    This is the template your output will used in: """ + """
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ product_name }} Landing Page</title>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { width: 80%; margin: auto; overflow: hidden; }
+            header { background: {{background_color}}; color: white; padding-top: 30px; min-height: 70px; border-bottom: {{main_color}} 3px solid; }
+            header a { color: #ffffff; text-decoration: none; text-transform: uppercase; font-size: 16px; }
+            header #branding { float: left; }
+            header #branding h1 { margin: 0; }
+            header nav { float: right; margin-top: 10px; }
+            header .highlight, header .current a { color: {{main_color}}; font-weight: bold; }
+            header a:hover { color: #cccccc; font-weight: bold; }
+            #showcase { min-height: 400px; background: url('{{ product_image }}') no-repeat center center/cover; text-align: center; color: #ffffff; }
+            #showcase h1 { margin-top: 100px; font-size: 55px; margin-bottom: 10px; }
+            #showcase p { font-size: 20px; }
+            button { display: inline-block; height: 50px; padding: 0 30px; color: #ffffff; text-align: center; font-size: 18px; font-weight: 600; line-height: 50px; letter-spacing: .1rem; text-transform: uppercase; text-decoration: none; white-space: nowrap; background-color: {{main_color}}; border-radius: 4px; border: none; cursor: pointer; box-sizing: border-box; }
+            #main-content { padding: 20px; }
+            footer { padding: 20px; margin-top: 20px; color: #ffffff; background-color: #222; text-align: center; }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="container">
+                <div id="branding">
+                    <h1><span class="highlight">{{ product_name }}</span></h1>
+                </div>
+            </div>
+        </header>
+
+        <section id="showcase">
+            <div class="container">
+                <h1>{{ headline }}</h1>
+                <p>{{ subheadline }}</p>
+                <button onClick="alert('Thanks du Hengst')">Pre-Order Now</button>
+            </div>
+        </section>
+
+        <section id="main-content">
+            <div class="container">
+                {{ main_content | safe }}
+            </div>
+        </section>
+
+        <footer>
+            <p>© 2024 {{ product_name }}. All rights reserved.</p>
+            <p>Impressum: RoboPear, 123 Munich Street, San Francisco</p>
+        </footer>
+    </body>
+    </html>
+    
     """
 
     response = openai.beta.chat.completions.parse(
@@ -149,7 +212,8 @@ if __name__ == "__main__":
         interests=["Technology", "Nerd", "University"],
         mainimage="coke.jpeg",
         images=["coke2.jpeg", "coke3.jpeg"],
-        product="Mate Caffeine Drink"
+        product="Mate Caffeine Drink",
+        description="A new caffeine drink that will boost your energy and improve your focus. It contains natural ingredients and has a great taste.",
     )
 
     create_landing_page('coke', insights)
