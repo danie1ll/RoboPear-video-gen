@@ -10,6 +10,14 @@ with open('Lorenzo.txt', 'r') as file:
     api_key = file.read().strip()  # Read the file and strip whitespace 
 client = OpenAI(api_key=api_key)
 
+def Image_Generation(prompt):
+    response = client.images.generate(
+    model="dall-e-2",
+    prompt=prompt,
+    size="512x512"
+    )
+    image_url = response.data[0].url
+    return image_url
 
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
@@ -145,8 +153,8 @@ Info = ProductInformation(
     audience=audience  # Audience is already obtained
 )
 
+Info.product_images_url = Image_Generation(text_input)
 output = Info.find_product_information(text=text_input, pictures=pictures_input)
-
 # Print the instance to see its contents
 print(output.product_name)  # Print the output from the find_product_information method
 print(output.product_description)
