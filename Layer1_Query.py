@@ -1,4 +1,6 @@
 from openai import OpenAI
+with open('Lorenzo.txt', 'r') as file:
+    api_key = file.read().strip()  # Read the file and strip whitespace 
 client = OpenAI(api_key="sk-5bxhWgAQwoyIcLe-bZvNy0HhJhWl8Eu2ii7w5eoWpHT3BlbkFJvu6M8LGXZ9akWmhYEU2rlC8tbetSnCfDCPjmKtOQ8A")
 import os
 from pydantic import BaseModel
