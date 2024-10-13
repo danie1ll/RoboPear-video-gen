@@ -7,3 +7,5 @@ python-multipart
 openai
 pydantic
 jinja2
+cloudinary
+openai

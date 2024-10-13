@@ -3,7 +3,7 @@ Lorenzo.txt
 .vscode
 __pycache__/
 
-./generatedWebsites/
+/generatedWebsites/
 venv
 openaikey
 
