@@ -6,7 +6,7 @@ import requests
 import base64
 
 # Load API key
-with open('openaikey', 'r') as file:
+with open('Lorenzo.txt', 'r') as file:
     api_key = file.read().strip()  # Read the file and strip whitespace 
 client = OpenAI(api_key=api_key)
 
@@ -95,6 +95,20 @@ class ProductInformation(BaseModel):
             img_inputs.append(ImageToText(image))
         return img_inputs
     
+    def image_generation_prompt(self) -> str:
+        # Messages that will be sent to GPT-4 model
+        messages = [{"role": "system", "content": "Generate a image prompt for the product {self.product_name}, {self.product_description}."}]
+        # Generate output with OpenAI's GPT-4 model using structured parsing
+        try:
+            completion = client.beta.chat.completions.parse(
+                model="gpt-4o-2024-08-06",
+                messages=messages,
+                response_format=ProductInformation
+            )
+            return completion.choices[0].message.parsed
+        except Exception as e:
+            return f"Error generating response: {str(e)}"
+    
     def generate_target_product_description(self, AudienceSample) -> str:
         # Messages that will be sent to GPT-4 model
         messages = [{"role": "system", "content": "Generate a product description targeted to people that are {AudienceSample.gender}, {AudienceSample.age} years old, live in {AudienceSample.location}, and have the following interests: {AudienceSample.interest}."}]
@@ -154,6 +168,7 @@ Info = ProductInformation(
 )
 
 Info.product_images_url = Image_Generation(text_input)
+print(Info.product_images_url)
 output = Info.find_product_information(text=text_input, pictures=pictures_input)
 # Print the instance to see its contents
 print(output.product_name)  # Print the output from the find_product_information method
