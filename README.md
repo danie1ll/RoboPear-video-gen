@@ -10,6 +10,9 @@ conda activate robopear
 python -m pip install -r requirements.txt
 ```
 
+### Set OpenAI API key
+create a file called `openaikey` and put your OpenAI API key in it.
+
 ### Launch server
 `uvicorn main:app --reload`
 
@@ -25,3 +28,4 @@ to make the website available to the internet, use ngrok
 ```
 ngrok http 8000
 ```
+
