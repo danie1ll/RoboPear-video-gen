@@ -10,6 +10,18 @@ with open('Lorenzo.txt', 'r') as file:
     api_key = file.read().strip()  # Read the file and strip whitespace 
 client = OpenAI(api_key=api_key)
 
+
+class TargetAudienceInsights(BaseModel):
+    age_groups: List[str]
+    gender_distribution: List[str]
+    locations: List[str]
+    interests: List[str]
+    mainimage: str
+    images: List[str]
+    product: str
+    description: str
+    
+    
 def Image_Generation(prompt):
     response = client.images.generate(
     model="dall-e-2",
@@ -28,7 +40,7 @@ class AudienceSample(BaseModel):
     location: str
     interest: list
     
-class TargetAudienceInsights(BaseModel):
+class TargetAudienceInsightsClass(BaseModel):
     age_groups: List[str]
     gender_distribution: List[str]
     locations: List[str]
@@ -81,7 +93,19 @@ def ImageToText(image_path):
     )
     return response.choices[0].message.content
 
-
+def image_generation_prompt(self) -> str:
+        # Messages that will be sent to GPT-4 model
+        messages = [{"role": "system", "content": "Generate a image prompt for the product {self.product_name}, {self.product_description}."}]
+        # Generate output with OpenAI's GPT-4 model using structured parsing
+        try:
+            completion = client.beta.chat.completions.parse(
+                model="gpt-4o-2024-08-06",
+                messages=messages,
+                response_format=ProductInformation
+            )
+            return completion.choices[0].message.parsed
+        except Exception as e:
+            return f"Error generating response: {str(e)}"
 
 class ProductInformation(BaseModel):
     product_name: str
@@ -123,16 +147,16 @@ class ProductInformation(BaseModel):
         except Exception as e:
             return f"Error generating response: {str(e)}"
     
-    def find_product_information(self, text: Optional[str] = None, voice: Optional[str] = None, pictures: Optional[str] = None, videos: Optional[str] = None):
-        # Messages that will be sent to GPT-4 model
-        messages = [{"role": "system", "content": "You are a product analysis expert that provides product information. Find out a possible name and description for the product."}]
-        
-        if text:
-            messages.append({"role": "user", "content": f"Product initial description: {text}"})
-        if pictures:
-            for image in pictures:
-                print("pic reading")
-                messages.append({"role": "user", "content": f"The following pictures provide visual context for the product: {ImageToText(image)}"})
+def find_product_information(self, text: Optional[str] = None, voice: Optional[str] = None, pictures: Optional[str] = None, videos: Optional[str] = None):
+    # Messages that will be sent to GPT-4 model
+    messages = [{"role": "system", "content": "You are a product analysis expert that provides product information. Find out a possible name and description for the product."}]
+    
+    if text:
+        messages.append({"role": "user", "content": f"Product initial description: {text}"})
+    if pictures:
+        for image in pictures:
+            print("pic reading")
+            messages.append({"role": "user", "content": f"The following pictures provide visual context for the product: {ImageToText(image)}"})
 
         # Generate output with OpenAI's GPT-4 model using structured parsing
         try:
@@ -157,19 +181,40 @@ print(ImageToText(pictures_input[0]))
 videos_input = None  # Example: URL or file paths for videos.
 voice_input = None  # Example: A transcription of the voice message.
 
-# Create a ProductInformation instance
-audience = TargetAudienceInsights.find_audience(text=text_input, pictures=pictures_input)
+# Create a ProductInformation 
 
-Info = ProductInformation(
-    product_name=text_input,
-    product_description="A delicious drink made with tea, milk, and tapioca pearls.",  # Provide a description
-    product_images_url=pictures_input,  # Pass an empty list
-    audience=audience  # Audience is already obtained
-)
+def Wrapper(textInput, picturesInput):
+    Info = find_product_information(text=text_input, pictures=pictures_input)
+    Info.audience = TargetAudienceInsightsClass.find_audience(text=text_input, pictures=pictures_input)
+    Info.product_images_url = Image_Generation(image_generation_prompt())
+    result = TargetAudienceInsights()
+    result.age_groups = Info.audience.age_groups
+    result.gender_distribution = Info.audience.gender_distribution
+    result.locations = Info.audience.locations
+    result.interests = Info.audience.interests
+    result.images = Info.product_images_url
+    result.mainimage = pictures_input
+    return TargetAudienceInsights(BaseModel)
+    
 
-Info.product_images_url = Image_Generation(text_input)
-print(Info.product_images_url)
-output = Info.find_product_information(text=text_input, pictures=pictures_input)
-# Print the instance to see its contents
-print(output.product_name)  # Print the output from the find_product_information method
-print(output.product_description)
+
+# audience = TargetAudienceInsights.find_audience(text=text_input, pictures=pictures_input)
+
+
+# text_input = "Bubble tea"
+# pictures_input = ["C:\\Users\\botlo\\Desktop\\PEARVC\\RoboPear-video-gen\\generatedWebsites\\imgTest1.jpg"]
+# Wrapper(text_input, pictures_input)
+
+# Info = ProductInformation(
+#     product_name=text_input,
+#     product_description="A delicious drink made with tea, milk, and tapioca pearls.",  # Provide a description
+#     product_images_url=pictures_input,  # Pass an empty list
+#     audience=audience  # Audience is already obtained
+# )
+
+# Info.product_images_url = Image_Generation(text_input)
+# print(Info.product_images_url)
+# output = Info.find_product_information(text=text_input, pictures=pictures_input)
+# # Print the instance to see its contents
+# print(output.product_name)  # Print the output from the find_product_information method
+# print(output.product_description)
