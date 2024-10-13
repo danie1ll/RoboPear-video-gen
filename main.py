@@ -7,6 +7,7 @@ from typing import Optional
 from pydantic import BaseModel
 import cloudinary
 import cloudinary.uploader
+from Layer1_Query import Wrapper
 from createWebsite import TargetAudienceInsights, create_landing_page
 from ml_flows import run_flow, poll_flow
 import logging
@@ -20,6 +21,8 @@ cloudinary.config(
 )
 
 app = FastAPI()
+
+BASE_URL = input("Enter the base URL for the server (e.g. http://localhost:8000): ")
 
 app.mount("/output", StaticFiles(directory="./generatedWebsites"), name="generatedWebsites")
 
