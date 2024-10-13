@@ -1,11 +1,22 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.responses import HTMLResponse
 import os
+import cloudinary
+import cloudinary.uploader
 from typing import Optional
 from pydantic import BaseModel
 from ml_flows import run_flow, poll_flow
 import logging
+from dotenv import load_dotenv
 
+load_dotenv()
+
+# Initialize Cloudinary
+cloudinary.config(
+    cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key = os.getenv('CLOUDINARY_API_KEY'),
+    api_secret = os.getenv('CLOUDINARY_API_SECRET')
+)
 
 app = FastAPI()
 
@@ -35,37 +46,33 @@ async def read_root():
         # <input name="season" type="text" placeholder="Enter season" required>
 
 # Define a route to handle the uploaded image
-@app.post("/upload-image/")
-async def upload_image(image: UploadFile = File(...)):
+@app.post("/generate-video/")
+async def generate_video(image: UploadFile = File(...)):
+    
     # Process the uploaded image
     contents = await image.read()
     
-    # Here you can save the image or process it as needed
-    with open(image.filename, "wb") as f:
+    # Save the image in the 'images' folder
+    image_path = os.path.join("images", image.filename)
+    with open(image_path, "wb") as f:
         f.write(contents)
     
-    print(f"Uploaded image: {image.filename}")
-    return {"message": "Image uploaded successfully", "filename": image.filename}
-
-# Define a route to handle the uploaded text
-@app.post("/upload-text/")
-async def upload_text(text: str = Form(...)):
-    # Process the uploaded text
-    print(f"Uploaded text: {text}")
-    return {"message": "Text uploaded successfully", "text": text}
-
-# # Define a model for the request body
-# class VideoGenerationRequest(BaseModel):
-#     image_url: str
-
-@app.post("/generate-video/")
-async def generate_video(image_url: str = Form(...)):
+    logging.info(f"Saved image: {image.filename}")
+    print(f"Saved image: {image.filename}")
+    
     holiday = "Easter"
     season = "winter"
     video_prompt = "light changes slightly"
     scene_prompt = f"A product placed into a center of a composition on a wooden table. The product is surrounded by {holiday} items. Cozy and rustic {season} feeling. 4k. high resolution, 3d. Instagram ready."
-    
+
     try:
+        # Upload the image to Cloudinary
+        print(f"Trying to upload image to Cloudinary")
+        response = cloudinary.uploader.upload(contents)
+        image_url = response['secure_url']
+        logging.info(f"Image uploaded: {image_url}")
+        print(f"Image uploaded: {image_url}")        
+        
         flow = run_flow(image_url, scene_prompt, video_prompt)
         if flow['status'] == "QUEUED":
             poll_result = poll_flow(flow['poll_url'])
@@ -86,5 +93,12 @@ async def generate_video(image_url: str = Form(...)):
         else:
             return {"message": "Error: Flow not queued"}
     except Exception as e:
+        print(f"Error generating video: {str(e)}")
         return {"message": f"Error generating video: {str(e)}"}
 
+# Define a route to handle the uploaded text
+@app.post("/upload-text/")
+async def upload_text(text: str = Form(...)):
+    # Process the uploaded text
+    print(f"Uploaded text: {text}")
+    return {"message": "Text uploaded successfully", "text": text}
