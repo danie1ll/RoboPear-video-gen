@@ -7,6 +7,7 @@ from typing import Optional
 from pydantic import BaseModel
 import cloudinary
 import cloudinary.uploader
+from Layer1_Query import Wrapper
 from createWebsite import TargetAudienceInsights, create_landing_page
 from ml_flows import run_flow, poll_flow
 import logging
@@ -119,6 +120,8 @@ async def upload_text(sessionid: str, text: str = Form(...)):
     print(f"Uploaded text: {text}")
 
     #insights = Wrapper(text, BASE_URL + f"/output/{sessionid}/image.jpg")
+    BASE_URL = "http://localhost:8000"
+    
     insights = Wrapper(text, f"./generatedWebsites/{sessionid}/image.jpg", BASE_URL + f"/output/{sessionid}/image.jpg")
 
     create_landing_page(sessionid, insights)
