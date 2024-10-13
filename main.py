@@ -22,6 +22,8 @@ cloudinary.config(
 
 app = FastAPI()
 
+BASE_URL = input("Enter the base URL for the server (e.g. http://localhost:8000): ")
+
 app.mount("/output", StaticFiles(directory="./generatedWebsites"), name="generatedWebsites")
 
 # Define a route for the homepage to upload files
