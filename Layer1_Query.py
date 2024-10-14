@@ -4,14 +4,14 @@ from pydantic import BaseModel
 from typing import List, Optional
 import requests
 import base64
+from dotenv import load_dotenv
 
 from createWebsite import TargetAudienceInsights
 
-# Load API key
-with open('openaikey', 'r') as file:
-    api_key = file.read().strip()  # Read the file and strip whitespace 
-client = OpenAI(api_key=api_key)
-    
+
+load_dotenv()
+
+client = OpenAI()
     
 def Image_Generation(prompt):
     response = client.images.generate(

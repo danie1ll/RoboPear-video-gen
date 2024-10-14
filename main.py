@@ -22,7 +22,7 @@ cloudinary.config(
 
 app = FastAPI()
 
-BASE_URL = input("Enter the base URL for the server (e.g. http://localhost:8000): ")
+# BASE_URL = input("Enter the base URL for the server (e.g. http://localhost:8000): ")
 
 app.mount("/output", StaticFiles(directory="./generatedWebsites"), name="generatedWebsites")
 
@@ -91,6 +91,7 @@ async def upload_image(sessionid: str, image: UploadFile = File(...)):
             if isinstance(poll_result, list) and len(poll_result) > 0:
                 video_url = poll_result[0]['value']['data']
                 logging.info(f"Video generated: {video_url}")
+                print(f"Video generated: {video_url}")
                 return {"message": "Video generated successfully", "video_url": video_url}
             else:
                 return {"message": f"Error: Unexpected poll result format {poll_result}"}
@@ -134,7 +135,4 @@ async def upload_text(sessionid: str, text: str = Form(...)):
     print(ret)
     return ret
 
-# # Define a model for the request body
-# class VideoGenerationRequest(BaseModel):
-#     image_url: str
 
