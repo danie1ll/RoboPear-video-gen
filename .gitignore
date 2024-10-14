@@ -2,7 +2,7 @@ Lorenzo.txt
 .env
 .vscode
 __pycache__/
-
-./generatedWebsites/
+images/
+generatedWebsites/
 venv
 openaikey
