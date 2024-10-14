@@ -12,8 +12,10 @@ from createWebsite import TargetAudienceInsights, create_landing_page
 from ml_flows import run_flow, poll_flow
 import logging
 
-# Initialize Cloudinary
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
+# Initialize Cloudinary
 cloudinary.config(
     cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
     api_key = os.getenv('CLOUDINARY_API_KEY'),
@@ -22,7 +24,10 @@ cloudinary.config(
 
 app = FastAPI()
 
-# BASE_URL = input("Enter the base URL for the server (e.g. http://localhost:8000): ")
+# Deploy
+# BASE_URL = input("Enter the public base URL for this server (e.g. http://localhost:8000): ")
+# Debugging
+BASE_URL = "http://localhost:8000"
 
 app.mount("/output", StaticFiles(directory="./generatedWebsites"), name="generatedWebsites")
 
@@ -30,7 +35,6 @@ app.mount("/output", StaticFiles(directory="./generatedWebsites"), name="generat
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
     randomnumber  = random.randint(0, 100000)
-
 
     return f"""
     <h2>Upload Image</h2>
@@ -61,7 +65,7 @@ async def upload_image(sessionid: str, image: UploadFile = File(...)):
     with open(file_path, "wb") as f:
         f.write(contents)
     
-    print(f"Stored image: {image.filename}")
+    logger.info(f"Stored image: {image.filename}")
 
     holiday = "Easter"
     season = "winter"
@@ -71,11 +75,10 @@ async def upload_image(sessionid: str, image: UploadFile = File(...)):
     try:
 
         # Upload the image to Cloudinary
-        print(f"Trying to upload image to Cloudinary")
+        logger.info(f"Trying to upload image to Cloudinary")
         response = cloudinary.uploader.upload(contents)
         image_url = response['secure_url']
-        logging.info(f"Image uploaded: {image_url}")
-        print(f"Image uploaded: {image_url}")
+        logger.info(f"Image uploaded: {image_url}")
 
         flow = run_flow(image_url, scene_prompt, video_prompt)
         if flow['status'] == "QUEUED":
@@ -90,12 +93,12 @@ async def upload_image(sessionid: str, image: UploadFile = File(...)):
             
             if isinstance(poll_result, list) and len(poll_result) > 0:
                 video_url = poll_result[0]['value']['data']
-                logging.info(f"Video generated: {video_url}")
-                print(f"Video generated: {video_url}")
+                logger.info(f"Video generated: {video_url}")
                 return {"message": "Video generated successfully", "video_url": video_url}
             else:
                 return {"message": f"Error: Unexpected poll result format {poll_result}"}
         else:
+            logger.error(f"Error: Flow not queued")
             return {"message": "Error: Flow not queued"}
     except Exception as e:
         return {"message": f"Error generating video: {str(e)}"}
@@ -104,7 +107,6 @@ async def upload_image(sessionid: str, image: UploadFile = File(...)):
 
 # THIS IS A DUMMY
 def LorenzosStuff(text, image_url):
-    print("WE USE DUMMY LORENZO HERE")
     return TargetAudienceInsights(
         age_groups=["5-9"],
         gender_distribution=["100% Male", "0% Female"],
@@ -120,10 +122,9 @@ def LorenzosStuff(text, image_url):
 @app.post("/upload-text/{sessionid}")
 async def upload_text(sessionid: str, text: str = Form(...)):
     # Process the uploaded text
-    print(f"Uploaded text: {text}")
+    logger.info(f"Uploading text: {text}")
 
     #insights = Wrapper(text, BASE_URL + f"/output/{sessionid}/image.jpg")
-    BASE_URL = "http://localhost:8000"
     
     insights = Wrapper(text, f"./generatedWebsites/{sessionid}/image.jpg", BASE_URL + f"/output/{sessionid}/image.jpg")
 
@@ -132,7 +133,7 @@ async def upload_text(sessionid: str, text: str = Form(...)):
     # e.g. http://localhost:8000/output/coke/landing_page.html
     ret = {"message": "Text uploaded successfully", "text": text, "url": BASE_URL + f"/output/{sessionid}/landing_page.html"}
 
-    print(ret)
+    logger.info(ret)
     return ret
 
 
