@@ -49,11 +49,14 @@ def poll_flow(url: str) -> dict:
                 time.sleep(interval_seconds)
                 continue
             if body['status'] == "COMPLETED":
+                logger.info(f"Flow completed")
                 return body['output']
             if body['status'] == "FAILED":
+                logger.error(f"Flow failed with {body['error']}")
                 raise Exception("Flow failed")
         else:
-            raise
+            logger.error(f"Error: {response.status_code} - {response.text}")
+            raise Exception("Error polling flow")
 
 
 def main():
